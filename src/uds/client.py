@@ -2,7 +2,6 @@
 SAAB-SUITE — UDS client (ISO 14229).
 
 Implements the UDS service layer over J2534 CAN (Mongoose Pro GM II).
-Used by Trionic T8 and other module communication.
 
 Services implemented:
   0x10  DiagnosticSessionControl
@@ -20,9 +19,8 @@ Services implemented:
 """
 
 from __future__ import annotations
-import time
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Optional
 
@@ -58,7 +56,6 @@ class ResetType(IntEnum):
 
 
 class NRC(IntEnum):
-    """Negative Response Codes."""
     GENERAL_REJECT                  = 0x10
     SERVICE_NOT_SUPPORTED           = 0x11
     SUB_FUNCTION_NOT_SUPPORTED      = 0x12
@@ -100,12 +97,61 @@ class TransportError(UDSException):
     pass
 
 
+# ── Stub DID response table ───────────────────────────────────────────────────
+# Keyed by (DID_HIGH, DID_LOW).
+# Values are raw data bytes that follow the positive SID + DID echo.
+# Numeric params: big-endian uint16, pre-scaled (scale applied in trionic8.py).
+# String params:  ASCII bytes.
+
+_STUB_DID_DATA: dict[tuple[int,int], bytes] = {
+    # ── Identification strings ────────────────────────────────────────────
+    (0xF1, 0x90): b"YS3FD45Y381234567",   # VIN  (17 chars)
+    (0xF1, 0x87): b"55564890        ",     # Part number
+    (0xF1, 0x8C): b"T8-2008-B284R   ",    # ECU serial
+    (0xF1, 0x97): b"E87 v1.14       ",    # SW version
+    (0xF1, 0xA2): b"Trionic8-StageOEM",   # Cal fingerprint
+
+    # ── Live engine data (uint16 big-endian, scaled in trionic8.py) ───────
+    # RPM:  850 rpm          → raw 850  (scale ×1)
+    (0x20, 0x05): (850  ).to_bytes(2, "big"),
+    # Boost: 95 kPa          → raw 950  (scale ×0.1)
+    (0x20, 0x01): (950  ).to_bytes(2, "big"),
+    # IAT:  22.5 °C          → raw 625  (scale ×0.1, offset -40)  625×0.1-40=22.5
+    (0x20, 0x02): (625  ).to_bytes(2, "big"),
+    # Coolant: 91 °C         → raw 1310 (scale ×0.1, offset -40)  1310×0.1-40=91
+    (0x20, 0x03): (1310 ).to_bytes(2, "big"),
+    # Throttle: 3.2%         → raw 32   (scale ×0.1)
+    (0x20, 0x04): (32   ).to_bytes(2, "big"),
+    # Ign timing: 12.5 °BTDC → raw 125  (scale ×0.1)
+    (0x20, 0x06): (125  ).to_bytes(2, "big"),
+    # Inj PW: 2.14 ms        → raw 214  (scale ×0.01)
+    (0x20, 0x07): (214  ).to_bytes(2, "big"),
+    # Lambda: 1.00           → raw 100  (scale ×0.01)
+    (0x20, 0x08): (100  ).to_bytes(2, "big"),
+    # Knock retard: 0.0°     → raw 0
+    (0x20, 0x09): (0    ).to_bytes(2, "big"),
+    # Wastegate duty: 12%    → raw 120  (scale ×0.1)
+    (0x20, 0x0A): (120  ).to_bytes(2, "big"),
+    # Haldex: 0%             → raw 0
+    (0x20, 0x0B): (0    ).to_bytes(2, "big"),
+    # Battery: 14.1 V        → raw 141  (scale ×0.1)
+    (0x20, 0x0C): (141  ).to_bytes(2, "big"),
+    # Speed: 0 km/h          → raw 0
+    (0x20, 0x0D): (0    ).to_bytes(2, "big"),
+    # MAF: 2.8 g/s           → raw 28   (scale ×0.1)
+    (0x20, 0x0E): (28   ).to_bytes(2, "big"),
+    # Fuel trim ST: +1.2%    → raw 1012 (scale ×0.1, offset -100)
+    (0x20, 0x0F): (1012 ).to_bytes(2, "big"),
+    # Fuel trim LT: -0.4%    → raw 996  (scale ×0.1, offset -100)
+    (0x20, 0x10): (996  ).to_bytes(2, "big"),
+}
+
+
 # ── Transport stub (J2534 / CAN) ─────────────────────────────────────────────
 
 class J2534Transport:
     """
     Thin wrapper around J2534 pass-thru for UDS frame exchange.
-    Real implementation connects to the Mongoose Pro GM II DLL.
     Stub mode used when hardware is not connected.
     """
 
@@ -113,10 +159,10 @@ class J2534Transport:
 
     def __init__(self, tx_id: int = 0x7E0, rx_id: int = 0x7E8,
                  timeout_ms: int = 1000, stub: bool = True):
-        self.tx_id     = tx_id
-        self.rx_id     = rx_id
-        self.timeout   = timeout_ms / 1000.0
-        self.stub      = stub
+        self.tx_id      = tx_id
+        self.rx_id      = rx_id
+        self.timeout    = timeout_ms / 1000.0
+        self.stub       = stub
         self._connected = False
 
     def connect(self) -> bool:
@@ -124,7 +170,6 @@ class J2534Transport:
             logger.info("[J2534] Stub mode — no hardware required")
             self._connected = True
             return True
-        # TODO: load J2534 DLL, open device, open CAN channel
         raise NotImplementedError("Live J2534 connection not yet wired")
 
     def disconnect(self) -> None:
@@ -139,29 +184,36 @@ class J2534Transport:
         raise NotImplementedError("Live send/recv not yet wired")
 
     def _stub_response(self, payload: bytes) -> bytes:
-        """Return plausible positive responses for common services."""
+        """Return realistic positive responses per service / DID."""
         if not payload:
             raise TransportError("Empty payload")
-        sid = payload[0]
-        pos = sid + 0x40          # positive response SID
 
-        stubs = {
+        sid = payload[0]
+        pos = sid + 0x40   # positive response SID
+
+        # ReadDataByIdentifier — look up per-DID stub data
+        if sid == SID.READ_DATA_BY_ID and len(payload) >= 3:
+            dh, dl = payload[1], payload[2]
+            data = _STUB_DID_DATA.get((dh, dl), b"\x00\x00")
+            return bytes([pos, dh, dl]) + data
+
+        # Generic stubs for other services
+        generic = {
             SID.DIAGNOSTIC_SESSION_CONTROL: bytes([pos, payload[1] if len(payload) > 1 else 0x01]),
             SID.ECU_RESET:                  bytes([pos, 0x01]),
             SID.TESTER_PRESENT:             bytes([pos, 0x00]),
-            SID.READ_DATA_BY_ID:            bytes([pos]) + payload[1:3] + b'\xDE\xAD\xBE\xEF',
             SID.SECURITY_ACCESS:            bytes([pos, 0x02, 0x12, 0x34]),
             SID.READ_DTC:                   bytes([pos, 0xFF, 0x00]),
             SID.CLEAR_DTC:                  bytes([pos]),
         }
-        return stubs.get(sid, bytes([pos]))
+        return generic.get(sid, bytes([pos]))
 
 
 # ── UDS Client ───────────────────────────────────────────────────────────────
 
 class UDSClient:
     """
-    High-level UDS client.  Uses J2534Transport for frame exchange.
+    High-level UDS client.
 
     Example:
         client = UDSClient()
@@ -183,28 +235,20 @@ class UDSClient:
     def disconnect(self) -> None:
         self.transport.disconnect()
 
-    # ── Session control ──────────────────────────────────────────────────────
-
     def set_session(self, session: SessionType = SessionType.DEFAULT) -> None:
         payload = bytes([SID.DIAGNOSTIC_SESSION_CONTROL, int(session)])
-        resp = self._request(payload)
+        self._request(payload)
         self._session = session
         logger.info(f"[UDS] Session: {session.name}")
-
-    # ── Tester present (keep-alive) ──────────────────────────────────────────
 
     def tester_present(self, suppress_response: bool = True) -> None:
         sub = 0x80 if suppress_response else 0x00
         self._request(bytes([SID.TESTER_PRESENT, sub]))
 
-    # ── Read data by identifier ──────────────────────────────────────────────
-
     def read_data(self, did: int) -> bytes:
         payload = bytes([SID.READ_DATA_BY_ID, (did >> 8) & 0xFF, did & 0xFF])
         resp = self._request(payload)
-        return resp[3:]   # strip positive SID + DID echo
-
-    # ── Security access ──────────────────────────────────────────────────────
+        return resp[3:]   # strip positive SID + DID echo (3 bytes)
 
     def security_access(self, level: int = 0x01) -> bytes:
         payload = bytes([SID.SECURITY_ACCESS, level])
@@ -217,8 +261,6 @@ class UDSClient:
         payload = bytes([SID.SECURITY_ACCESS, level + 1]) + key
         self._request(payload)
         logger.info("[UDS] Security access granted")
-
-    # ── DTC handling ─────────────────────────────────────────────────────────
 
     def read_dtc(self, sub: int = 0xFF, mask: int = 0x00) -> bytes:
         payload = bytes([SID.READ_DTC, sub, mask])
@@ -233,14 +275,10 @@ class UDSClient:
         self._request(payload)
         logger.info("[UDS] DTCs cleared")
 
-    # ── ECU reset ────────────────────────────────────────────────────────────
-
     def ecu_reset(self, reset_type: ResetType = ResetType.HARD) -> None:
         payload = bytes([SID.ECU_RESET, int(reset_type)])
         self._request(payload)
         logger.info(f"[UDS] ECU reset: {reset_type.name}")
-
-    # ── Internal ─────────────────────────────────────────────────────────────
 
     def _request(self, payload: bytes) -> bytes:
         logger.debug(f"[UDS] TX: {payload.hex()}")

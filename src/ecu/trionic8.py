@@ -163,7 +163,11 @@ class Trionic8:
         for key in id_keys:
             try:
                 raw = self.uds.read_data(DID[key])
-                info[key] = raw.decode("ascii", errors="replace").strip("\x00 ")
+                # Decode ASCII, strip null bytes and whitespace padding
+                decoded = raw.decode("ascii", errors="replace")
+                info[key] = decoded.strip("\x00 \ufffd").strip()
+                if not info[key]:
+                    info[key] = "[no data]"
             except Exception as e:
                 info[key] = f"[error: {e}]"
         return info
