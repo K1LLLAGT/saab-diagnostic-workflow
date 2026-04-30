@@ -1,0 +1,169 @@
+{
+  "vin": "YS3FD45Y381234567",
+  "prefix": "scan",
+  "started": "2026-04-30T00:50:00",
+  "ended": "2026-04-30T00:50:00",
+  "host": "localhost",
+  "entries": [
+    {
+      "ts": "00:50:00.222",
+      "level": "INFO",
+      "msg": "Session started \u2014 VIN: YS3FD45Y381234567  host: localhost"
+    },
+    {
+      "ts": "00:50:00.222",
+      "level": "INFO",
+      "msg": "diagnostic_scan.py started  vin=YS3FD45Y381234567  stub=True"
+    },
+    {
+      "ts": "00:50:00.223",
+      "level": "INFO",
+      "msg": "[1/4] Environment check..."
+    },
+    {
+      "ts": "00:50:00.223",
+      "level": "INFO",
+      "msg": "Environment: OK"
+    },
+    {
+      "ts": "00:50:00.223",
+      "level": "INFO",
+      "msg": "[2/4] J2534 interface probe..."
+    },
+    {
+      "ts": "00:50:00.223",
+      "level": "WARN",
+      "msg": "J2534 not found \u2014 continuing in stub mode"
+    },
+    {
+      "ts": "00:50:00.224",
+      "level": "INFO",
+      "msg": "[3/4] CAN bus probe..."
+    },
+    {
+      "ts": "00:50:00.224",
+      "level": "INFO",
+      "msg": "CAN bus: OK"
+    },
+    {
+      "ts": "00:50:00.224",
+      "level": "INFO",
+      "msg": "[4/4] Trionic T8 ECU read..."
+    },
+    {
+      "ts": "00:50:00.224",
+      "level": "DATA",
+      "msg": "VIN = \ufffd\ufffd\ufffd\ufffd"
+    },
+    {
+      "ts": "00:50:00.225",
+      "level": "DATA",
+      "msg": "PART_NUMBER = \ufffd\ufffd\ufffd\ufffd"
+    },
+    {
+      "ts": "00:50:00.225",
+      "level": "DATA",
+      "msg": "ECU_SERIAL = \ufffd\ufffd\ufffd\ufffd"
+    },
+    {
+      "ts": "00:50:00.225",
+      "level": "DATA",
+      "msg": "SW_VERSION = \ufffd\ufffd\ufffd\ufffd"
+    },
+    {
+      "ts": "00:50:00.225",
+      "level": "DATA",
+      "msg": "CAL_FINGERPRINT = \ufffd\ufffd\ufffd\ufffd"
+    },
+    {
+      "ts": "00:50:00.226",
+      "level": "DATA",
+      "msg": "RPM = 57005"
+    },
+    {
+      "ts": "00:50:00.226",
+      "level": "DATA",
+      "msg": "BOOST_KPA = 5700.5"
+    },
+    {
+      "ts": "00:50:00.226",
+      "level": "DATA",
+      "msg": "COOLANT_C = 5660.5"
+    },
+    {
+      "ts": "00:50:00.227",
+      "level": "DATA",
+      "msg": "IAT_C = 5660.5"
+    },
+    {
+      "ts": "00:50:00.227",
+      "level": "DATA",
+      "msg": "THROTTLE_PCT = 5700.5"
+    },
+    {
+      "ts": "00:50:00.227",
+      "level": "DATA",
+      "msg": "IGN_TIMING = 5700.5"
+    },
+    {
+      "ts": "00:50:00.228",
+      "level": "DATA",
+      "msg": "LAMBDA = 570.0500000000001"
+    },
+    {
+      "ts": "00:50:00.228",
+      "level": "DATA",
+      "msg": "KNOCK_RETARD = 5700.5"
+    },
+    {
+      "ts": "00:50:00.228",
+      "level": "DATA",
+      "msg": "WASTEGATE = 5700.5"
+    },
+    {
+      "ts": "00:50:00.228",
+      "level": "DATA",
+      "msg": "HALDEX = 5700.5"
+    },
+    {
+      "ts": "00:50:00.229",
+      "level": "DATA",
+      "msg": "BATTERY_V = 5700.5"
+    },
+    {
+      "ts": "00:50:00.229",
+      "level": "DATA",
+      "msg": "SPEED = 57005"
+    },
+    {
+      "ts": "00:50:00.229",
+      "level": "DATA",
+      "msg": "MAF_GS = 5700.5"
+    },
+    {
+      "ts": "00:50:00.233",
+      "level": "DATA",
+      "msg": "FUEL_TRIM_ST = 5600.5"
+    },
+    {
+      "ts": "00:50:00.233",
+      "level": "DATA",
+      "msg": "FUEL_TRIM_LT = 5600.5"
+    },
+    {
+      "ts": "00:50:00.233",
+      "level": "DATA",
+      "msg": "DTC_COUNT = 0"
+    },
+    {
+      "ts": "00:50:00.233",
+      "level": "INFO",
+      "msg": "Session ended \u2014 errors=0 warnings=1 dtcs=0"
+    }
+  ],
+  "summary": {
+    "errors": 0,
+    "warnings": 1,
+    "dtc_count": 0
+  }
+}

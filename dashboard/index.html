@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAAB-SUITE Diagnostic Dashboard</title>
+  <style>
+    :root {
+      --bg:       #0d0f14;
+      --surface:  #161a22;
+      --border:   #2a2f3d;
+      --accent:   #e8a020;
+      --accent2:  #4a9eff;
+      --text:     #d0d4dc;
+      --muted:    #6b7280;
+      --error:    #ef4444;
+      --warn:     #f59e0b;
+      --ok:       #22c55e;
+      --font-mono: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--font-mono); font-size: 13px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { color: var(--accent); font-size: 18px; font-weight: 700; letter-spacing: 2px; }
+    .logo span { color: var(--text); font-weight: 400; }
+    .vin-badge {
+      background: #1e2230; border: 1px solid var(--border);
+      padding: 4px 12px; border-radius: 4px;
+      color: var(--accent2); font-size: 12px;
+    }
+
+    /* ── Layout ── */
+    .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 53px); }
+    nav {
+      background: var(--surface); border-right: 1px solid var(--border);
+      padding: 16px 0;
+    }
+    nav a {
+      display: block; padding: 9px 20px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      border-left: 3px solid transparent; transition: all 0.15s;
+    }
+    nav a:hover, nav a.active {
+      color: var(--text); border-left-color: var(--accent);
+      background: rgba(232,160,32,0.07);
+    }
+    nav .section-label {
+      padding: 14px 20px 6px; color: var(--muted);
+      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    }
+    main { padding: 24px; overflow-y: auto; }
+
+    /* ── Panels ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel-title {
+      font-size: 15px; color: var(--accent); margin-bottom: 18px;
+      border-bottom: 1px solid var(--border); padding-bottom: 10px;
+    }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 14px;
+    }
+    .card-label { color: var(--muted); font-size: 11px; margin-bottom: 6px; }
+    .card-value { font-size: 22px; font-weight: 700; color: var(--text); }
+    .card-unit  { font-size: 11px; color: var(--muted); margin-left: 4px; }
+    .card.ok    { border-left: 3px solid var(--ok); }
+    .card.warn  { border-left: 3px solid var(--warn); }
+    .card.error { border-left: 3px solid var(--error); }
+
+    /* ── Live data grid ── */
+    .live-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .live-cell {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 5px; padding: 12px;
+    }
+    .live-cell .lc-name  { color: var(--muted); font-size: 10px; margin-bottom: 4px; }
+    .live-cell .lc-value { font-size: 18px; font-weight: 700; }
+    .live-cell .lc-unit  { font-size: 10px; color: var(--muted); margin-left: 3px; }
+
+    /* ── DTC table ── */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+    td { font-size: 12px; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 700;
+    }
+    .badge-error  { background: rgba(239,68,68,0.15);  color: var(--error); }
+    .badge-warn   { background: rgba(245,158,11,0.15); color: var(--warn); }
+    .badge-ok     { background: rgba(34,197,94,0.15);  color: var(--ok); }
+    .badge-info   { background: rgba(74,158,255,0.15); color: var(--accent2); }
+
+    /* ── Log viewer ── */
+    .log-viewer {
+      background: #0a0c10; border: 1px solid var(--border); border-radius: 5px;
+      padding: 14px; height: 420px; overflow-y: auto; font-size: 11px; line-height: 1.7;
+    }
+    .log-INFO  { color: #9ca3af; }
+    .log-DATA  { color: var(--accent2); }
+    .log-WARN  { color: var(--warn); }
+    .log-ERROR { color: var(--error); }
+
+    /* ── Session list ── */
+    .session-list { display: flex; flex-direction: column; gap: 8px; }
+    .session-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 5px; padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    .session-item:hover { border-color: var(--accent); }
+    .session-item .si-vin { color: var(--accent2); font-size: 12px; }
+    .session-item .si-ts  { color: var(--muted); font-size: 11px; }
+    .session-item .si-meta { text-align: right; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex; gap: 10px; margin-bottom: 16px;
+    }
+    .btn {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 7px 14px; border-radius: 4px;
+      cursor: pointer; font-family: var(--font-mono); font-size: 12px;
+      transition: all 0.15s;
+    }
+    .btn:hover   { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+    .btn.primary:hover { background: #f5b040; }
+
+    /* ── ECU info table ── */
+    .info-table { width: 100%; border-collapse: collapse; }
+    .info-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    .info-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .info-table td:first-child { color: var(--muted); width: 220px; }
+
+    /* ── Status bar ── */
+    .statusbar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 5px 20px; display: flex; gap: 20px; font-size: 11px; color: var(--muted);
+    }
+    .statusbar .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+    .dot-ok    { background: var(--ok); }
+    .dot-error { background: var(--error); }
+    .dot-warn  { background: var(--warn); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">SAAB<span>-SUITE</span> &nbsp;·&nbsp; Diagnostic Dashboard</div>
+  <div class="vin-badge" id="header-vin">VIN: —</div>
+</header>
+
+<div class="layout">
+  <nav>
+    <div class="section-label">Overview</div>
+    <a href="#" class="active" data-panel="overview">◈ &nbsp;Overview</a>
+    <a href="#" data-panel="live">⬡ &nbsp;Live Data</a>
+
+    <div class="section-label">Diagnostics</div>
+    <a href="#" data-panel="dtc">⚠ &nbsp;Fault Codes</a>
+    <a href="#" data-panel="ecu-info">◻ &nbsp;ECU Info</a>
+
+    <div class="section-label">Sessions</div>
+    <a href="#" data-panel="sessions">☰ &nbsp;Session Log</a>
+    <a href="#" data-panel="log-viewer">⌨ &nbsp;Raw Log</a>
+  </nav>
+
+  <main>
+    <!-- Overview -->
+    <div class="panel active" id="panel-overview">
+      <div class="panel-title">System Overview — 2008 SAAB 9-3 XWD Aero / B284R / T8</div>
+      <div class="card-grid">
+        <div class="card ok">
+          <div class="card-label">ECU STATUS</div>
+          <div class="card-value" id="ov-ecu-status">—</div>
+        </div>
+        <div class="card" id="card-j2534">
+          <div class="card-label">J2534 / MONGOOSE</div>
+          <div class="card-value" id="ov-j2534">—</div>
+        </div>
+        <div class="card" id="card-dtc">
+          <div class="card-label">ACTIVE DTCs</div>
+          <div class="card-value" id="ov-dtc-count">—</div>
+        </div>
+        <div class="card ok">
+          <div class="card-label">SESSION</div>
+          <div class="card-value" id="ov-session">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">LAST RUN</div>
+          <div class="card-value" style="font-size:13px" id="ov-last-run">—</div>
+        </div>
+        <div class="card">
+          <div class="card-label">VIN</div>
+          <div class="card-value" style="font-size:12px" id="ov-vin">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Data -->
+    <div class="panel" id="panel-live">
+      <div class="panel-title">Live Data — B284R Engine Parameters</div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="refreshLive()">⟳ &nbsp;Refresh</button>
+        <button class="btn" onclick="exportLive()">↓ &nbsp;Export JSON</button>
+      </div>
+      <div class="live-grid" id="live-grid"></div>
+    </div>
+
+    <!-- DTC -->
+    <div class="panel" id="panel-dtc">
+      <div class="panel-title">Fault Codes (DTCs)</div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="readDTCs()">⟳ &nbsp;Read DTCs</button>
+        <button class="btn" onclick="clearDTCs()">✕ &nbsp;Clear DTCs</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Code</th><th>Description</th><th>Status</th><th>Module</th></tr>
+        </thead>
+        <tbody id="dtc-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ECU Info -->
+    <div class="panel" id="panel-ecu-info">
+      <div class="panel-title">ECU Identification — Trionic T8</div>
+      <table class="info-table" id="ecu-info-table"></table>
+    </div>
+
+    <!-- Sessions -->
+    <div class="panel" id="panel-sessions">
+      <div class="panel-title">Session History</div>
+      <div class="toolbar">
+        <button class="btn" onclick="loadSessions()">⟳ &nbsp;Refresh</button>
+      </div>
+      <div class="session-list" id="session-list"></div>
+    </div>
+
+    <!-- Raw Log -->
+    <div class="panel" id="panel-log-viewer">
+      <div class="panel-title">Raw Session Log</div>
+      <div class="toolbar">
+        <button class="btn" onclick="loadLog()">⟳ &nbsp;Reload</button>
+        <button class="btn" onclick="clearLogView()">✕ &nbsp;Clear view</button>
+      </div>
+      <div class="log-viewer" id="log-viewer"></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="statusbar">
+  <span><span class="dot dot-ok"></span>Python OK</span>
+  <span id="sb-j2534"><span class="dot dot-warn"></span>J2534: checking...</span>
+  <span id="sb-session">No session loaded</span>
+  <span id="sb-time"></span>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  vin:     "YS3FD45Y381234567",   // Your 9-3's VIN — update here
+  session: null,
+  liveData: null,
+};
+
+// ── Stub data (replaced by live backend when J2534 connected) ──────────────
+const STUB_ECU_INFO = {
+  "VIN":             "YS3FD45Y381234567",
+  "PART_NUMBER":     "55564890",
+  "ECU_SERIAL":      "T8-2008-B284R",
+  "SW_VERSION":      "E87 v1.14",
+  "CAL_FINGERPRINT": "Trionic8-StageOEM",
+};
+
+const STUB_LIVE = [
+  { name:"RPM",           value:850,   unit:"rpm",    warn: v=>v>6500 },
+  { name:"BOOST",         value:95.0,  unit:"kPa",    warn: v=>v>200 },
+  { name:"IAT",           value:22.5,  unit:"°C",     warn: v=>v>55 },
+  { name:"COOLANT",       value:91.0,  unit:"°C",     warn: v=>v>105 },
+  { name:"THROTTLE",      value:3.2,   unit:"%",      warn: ()=>false },
+  { name:"IGN TIMING",    value:12.5,  unit:"°BTDC",  warn: ()=>false },
+  { name:"INJ PW",        value:2.14,  unit:"ms",     warn: ()=>false },
+  { name:"LAMBDA",        value:1.00,  unit:"λ",      warn: v=>v<0.85||v>1.15 },
+  { name:"KNOCK RETARD",  value:0.0,   unit:"°",      warn: v=>v>5 },
+  { name:"WASTEGATE",     value:12.0,  unit:"% duty", warn: ()=>false },
+  { name:"HALDEX",        value:0.0,   unit:"%",      warn: ()=>false },
+  { name:"BATTERY",       value:14.1,  unit:"V",      warn: v=>v<11.5||v>15.5 },
+  { name:"SPEED",         value:0,     unit:"km/h",   warn: ()=>false },
+  { name:"MAF",           value:2.8,   unit:"g/s",    warn: ()=>false },
+  { name:"FUEL TRIM ST",  value:+1.2,  unit:"%",      warn: v=>Math.abs(v)>10 },
+  { name:"FUEL TRIM LT",  value:-0.4,  unit:"%",      warn: v=>Math.abs(v)>15 },
+];
+
+const STUB_DTCS = [
+  // empty by default — populated when DTCs present
+];
+
+// ── Nav ────────────────────────────────────────────────────────────────────
+document.querySelectorAll("nav a").forEach(a => {
+  a.addEventListener("click", e => {
+    e.preventDefault();
+    const id = a.dataset.panel;
+    document.querySelectorAll("nav a").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(x => x.classList.remove("active"));
+    a.classList.add("active");
+    document.getElementById("panel-" + id).classList.add("active");
+  });
+});
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function init() {
+  document.getElementById("header-vin").textContent = "VIN: " + state.vin;
+  document.getElementById("ov-vin").textContent     = state.vin;
+  document.getElementById("ov-ecu-status").textContent = "ONLINE (stub)";
+  document.getElementById("ov-j2534").textContent      = "DISCONNECTED";
+  document.getElementById("card-j2534").className       = "card warn";
+  document.getElementById("ov-dtc-count").textContent   = STUB_DTCS.length;
+  document.getElementById("card-dtc").className          = STUB_DTCS.length > 0 ? "card error" : "card ok";
+  document.getElementById("ov-session").textContent     = "STUB";
+  document.getElementById("ov-last-run").textContent    = new Date().toLocaleString();
+  document.getElementById("sb-j2534").innerHTML =
+    '<span class="dot dot-warn"></span>J2534: disconnected (stub)';
+  document.getElementById("sb-session").textContent = "VIN: " + state.vin;
+
+  renderLive();
+  renderECUInfo();
+  renderDTCs();
+  updateClock();
+}
+
+// ── Live data ──────────────────────────────────────────────────────────────
+function renderLive() {
+  const grid = document.getElementById("live-grid");
+  grid.innerHTML = "";
+  STUB_LIVE.forEach(item => {
+    const isWarn = item.warn(item.value);
+    const cell = document.createElement("div");
+    cell.className = "live-cell";
+    cell.innerHTML = `
+      <div class="lc-name">${item.name}</div>
+      <div class="lc-value" style="color:${isWarn ? "var(--warn)" : "var(--text)"}">
+        ${typeof item.value === "number" && !Number.isInteger(item.value)
+          ? item.value.toFixed(1) : item.value}
+        <span class="lc-unit">${item.unit}</span>
+      </div>`;
+    grid.appendChild(cell);
+  });
+}
+
+function refreshLive() {
+  // Jitter stub values slightly to simulate live polling
+  STUB_LIVE.forEach(item => {
+    if (typeof item.value === "number") {
+      item.value = +(item.value * (0.97 + Math.random() * 0.06)).toFixed(
+        item.unit === "rpm" || item.unit === "km/h" ? 0 : 1
+      );
+    }
+  });
+  renderLive();
+}
+
+function exportLive() {
+  const data = {};
+  STUB_LIVE.forEach(i => { data[i.name] = { value: i.value, unit: i.unit }; });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `live-data-${state.vin}-${Date.now()}.json`;
+  a.click();
+}
+
+// ── ECU info ───────────────────────────────────────────────────────────────
+function renderECUInfo() {
+  const tbl = document.getElementById("ecu-info-table");
+  tbl.innerHTML = Object.entries(STUB_ECU_INFO).map(([k, v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`
+  ).join("");
+}
+
+// ── DTCs ───────────────────────────────────────────────────────────────────
+function renderDTCs() {
+  const tbody = document.getElementById("dtc-tbody");
+  if (STUB_DTCS.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:var(--ok);text-align:center;padding:20px">
+      No active fault codes</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = STUB_DTCS.map(d => `
+    <tr>
+      <td style="color:var(--accent2)">${d.code}</td>
+      <td>${d.desc}</td>
+      <td><span class="badge badge-${d.severity}">${d.status}</span></td>
+      <td>${d.module}</td>
+    </tr>`).join("");
+}
+
+function readDTCs() {
+  // Stub — would call Python backend over local API when connected
+  renderDTCs();
+  appendLog("INFO", "DTC read requested (stub mode)");
+}
+
+function clearDTCs() {
+  STUB_DTCS.length = 0;
+  renderDTCs();
+  document.getElementById("ov-dtc-count").textContent = "0";
+  document.getElementById("card-dtc").className = "card ok";
+  appendLog("INFO", "DTCs cleared (stub)");
+}
+
+// ── Log viewer ─────────────────────────────────────────────────────────────
+const _logLines = [];
+function appendLog(level, msg) {
+  const ts = new Date().toTimeString().slice(0,8);
+  _logLines.push({ ts, level, msg });
+  renderLog();
+}
+function renderLog() {
+  const viewer = document.getElementById("log-viewer");
+  viewer.innerHTML = _logLines.map(e =>
+    `<div class="log-${e.level}">[${e.ts}] [${e.level.padEnd(5)}] ${e.msg}</div>`
+  ).join("");
+  viewer.scrollTop = viewer.scrollHeight;
+}
+function loadLog() { renderLog(); }
+function clearLogView() { _logLines.length = 0; renderLog(); }
+
+// ── Sessions ───────────────────────────────────────────────────────────────
+function loadSessions() {
+  const list = document.getElementById("session-list");
+  const stubs = [
+    { vin: state.vin, ts: "2024-01-15 14:32", prefix: "diag",  errors: 0, dtcs: 0 },
+    { vin: state.vin, ts: "2024-01-12 09:18", prefix: "scan",  errors: 0, dtcs: 2 },
+    { vin: state.vin, ts: "2024-01-10 17:05", prefix: "diag",  errors: 1, dtcs: 1 },
+  ];
+  list.innerHTML = stubs.map(s => `
+    <div class="session-item">
+      <div>
+        <div class="si-vin">${s.vin}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">${s.prefix.toUpperCase()} run</div>
+      </div>
+      <div class="si-meta">
+        <div class="si-ts">${s.ts}</div>
+        <div style="margin-top:4px">
+          <span class="badge ${s.errors>0 ? 'badge-error' : 'badge-ok'}">
+            ${s.errors} errors
+          </span>
+          &nbsp;
+          <span class="badge ${s.dtcs>0 ? 'badge-warn' : 'badge-ok'}">
+            ${s.dtcs} DTCs
+          </span>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+// ── Clock ──────────────────────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById("sb-time").textContent = new Date().toLocaleTimeString();
+  setTimeout(updateClock, 1000);
+}
+
+// ── Startup log entries ────────────────────────────────────────────────────
+appendLog("INFO", "SAAB-SUITE Dashboard initialised");
+appendLog("INFO", `VIN: ${state.vin}`);
+appendLog("INFO", "ECU: Trionic T8 / B284R");
+appendLog("WARN", "J2534 interface not connected — stub mode active");
+appendLog("DATA", "Platform: Win7-SAAB VM / Mongoose Pro GM II");
+
+loadSessions();
+init();
+</script>
+</body>
+</html>
