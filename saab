@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+  workflow)
+    "$ROOTDIR/scripts/saab-diagnostic-workflow.sh" "$@"
+    ;;
+  quick-scan|quick)
+    "$ROOTDIR/scripts/saab-quick-scan.sh" "$@"
+    ;;
+  doctor)
+    "$ROOTDIR/scripts/saab-doctor.sh" "$@"
+    ;;
+  help|--help|-h)
+    cat << 'USAGE'
+SAAB-SUITE CLI
+
+Usage:
+  ./saab workflow        Run full diagnostic workflow
+  ./saab quick-scan      Run quick CAN + DTC scan
+  ./saab doctor          Run environment self-test
+USAGE
+    ;;
+  *)
+    echo "[!] Unknown command: $CMD"
+    echo "    Try: ./saab help"
+    exit 1
+    ;;
+esac
