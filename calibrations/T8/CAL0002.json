@@ -1,0 +1,13 @@
+{
+  "cal_id": "CAL0002",
+  "os_id": "E87-BASE",
+  "calibration_id": "Trionic8-StageOEM-r2",
+  "cvn": "7C1D3E44",
+  "segment_type": "CAL",
+  "ecu": "T8",
+  "applicability": ["YS3FD45Y3"],
+  "depends_on": ["CAL0001"],
+  "supersedes": "CAL0001",
+  "release_date": "2009-06-15",
+  "notes": "Service-bulletin calibration update (fuel trim table revision)."
+}

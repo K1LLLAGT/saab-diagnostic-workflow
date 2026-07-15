@@ -184,6 +184,21 @@
     <div class="section-label">Sessions</div>
     <a href="#" data-panel="sessions">☰ &nbsp;Session Log</a>
     <a href="#" data-panel="log-viewer">⌨ &nbsp;Raw Log</a>
+
+    <div class="section-label">Advanced</div>
+    <a href="#" data-panel="sniffer">◨ &nbsp;CAN Sniffer</a>
+    <a href="#" data-panel="flashsafe">✓ &nbsp;Flash-Safe Mode</a>
+    <a href="#" data-panel="flashing">⇅ &nbsp;ECU Flashing</a>
+    <a href="#" data-panel="emulator">▣ &nbsp;Tech2/MDI Emulator</a>
+
+    <div class="section-label">Fleet &amp; Cloud</div>
+    <a href="#" data-panel="cloud">☁ &nbsp;Cloud History</a>
+    <a href="#" data-panel="calibration">▤ &nbsp;Calibration Catalog</a>
+    <a href="#" data-panel="remote">◎ &nbsp;Remote Diagnostics</a>
+
+    <div class="section-label">System</div>
+    <a href="#" data-panel="plugins">⬢ &nbsp;Plugin Manager</a>
+    <a href="#" data-panel="connection">⏻ &nbsp;Connection Status</a>
   </nav>
 
   <main>
@@ -266,6 +281,142 @@
         <button class="btn" onclick="clearLogView()">✕ &nbsp;Clear view</button>
       </div>
       <div class="log-viewer" id="log-viewer"></div>
+    </div>
+
+    <!-- CAN Sniffer -->
+    <div class="panel" id="panel-sniffer">
+      <div class="panel-title">CAN-Bus Sniffer</div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="sniffer.capture()">⏺ &nbsp;Capture Demo Frames</button>
+        <button class="btn" onclick="sniffer.exportJSON()">↓ &nbsp;Export .json</button>
+        <button class="btn" onclick="sniffer.exportLog()">↓ &nbsp;Export .log</button>
+        <button class="btn" onclick="sniffer.exportASC()">↓ &nbsp;Export .asc</button>
+        <button class="btn" onclick="sniffer.clear()">✕ &nbsp;Clear</button>
+      </div>
+      <div class="card-grid">
+        <div class="card"><div class="card-label">TOTAL FRAMES</div><div class="card-value" id="sniff-total">0</div></div>
+        <div class="card"><div class="card-label">UNIQUE IDS</div><div class="card-value" id="sniff-unique">0</div></div>
+        <div class="card"><div class="card-label">DETECTED BITRATE</div><div class="card-value" id="sniff-bitrate" style="font-size:16px">—</div></div>
+      </div>
+      <div class="panel-title" style="font-size:13px">ID Histogram</div>
+      <table>
+        <thead><tr><th>Arbitration ID</th><th>Count</th><th>Approx Hz</th><th>Last Payload</th></tr></thead>
+        <tbody id="sniff-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Flash-Safe Mode -->
+    <div class="panel" id="panel-flashsafe">
+      <div class="panel-title">Flash-Safe Checklist</div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="flashsafe.evaluate()">⟳ &nbsp;Evaluate Checklist</button>
+      </div>
+      <table>
+        <thead><tr><th>Check</th><th>Status</th><th>Detail</th></tr></thead>
+        <tbody id="flashsafe-tbody"></tbody>
+      </table>
+      <div class="card-grid" style="margin-top:16px">
+        <div class="card" id="flashsafe-summary-card">
+          <div class="card-label">ALL CLEAR</div>
+          <div class="card-value" id="flashsafe-summary">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ECU Flashing -->
+    <div class="panel" id="panel-flashing">
+      <div class="panel-title">ECU Flashing — Programming Session</div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="flashing.start()">▶ &nbsp;Start Flash (requires flash-safe clear)</button>
+      </div>
+      <div class="card-grid">
+        <div class="card"><div class="card-label">STATE</div><div class="card-value" id="flash-state" style="font-size:16px">IDLE</div></div>
+        <div class="card"><div class="card-label">PROGRESS</div><div class="card-value" id="flash-progress">0%</div></div>
+        <div class="card"><div class="card-label">SECURITY ACCESS</div><div class="card-value" id="flash-security" style="font-size:14px">Not requested</div></div>
+      </div>
+      <div class="panel-title" style="font-size:13px">Flash Log</div>
+      <div class="log-viewer" id="flash-log" style="height:220px"></div>
+      <p style="color:var(--muted); font-size:11px; margin-top:10px">
+        No real OEM security-access algorithm is bundled with this suite — see
+        docs/security-access-disclaimer.md. This panel drives the flash-safe
+        state machine (src.flashing.engine) against the simulator only.
+      </p>
+    </div>
+
+    <!-- Tech2/MDI Emulator -->
+    <div class="panel" id="panel-emulator">
+      <div class="panel-title">Tech2/MDI Emulator</div>
+      <div class="toolbar">
+        <button class="btn" onclick="emulator.render('ENGINE')">Engine</button>
+        <button class="btn" onclick="emulator.render('TRANS')">Transmission</button>
+        <button class="btn" onclick="emulator.render('ABS')">ABS</button>
+        <button class="btn" onclick="emulator.render('BCM')">BCM</button>
+      </div>
+      <div class="card-grid" id="emulator-grid"></div>
+      <div class="panel-title" style="font-size:13px">Menu</div>
+      <div class="session-list" id="emulator-menu"></div>
+    </div>
+
+    <!-- Cloud History -->
+    <div class="panel" id="panel-cloud">
+      <div class="panel-title">Cloud-Synced Vehicle History</div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="cloud.sync()">⟲ &nbsp;Sync Now</button>
+      </div>
+      <div class="card-grid">
+        <div class="card"><div class="card-label">PENDING SYNC ITEMS</div><div class="card-value" id="cloud-pending">0</div></div>
+        <div class="card ok"><div class="card-label">LAST SYNC</div><div class="card-value" style="font-size:13px" id="cloud-last-sync">Never</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Type</th><th>VIN</th><th>Recorded</th></tr></thead>
+        <tbody id="cloud-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Calibration Catalog -->
+    <div class="panel" id="panel-calibration">
+      <div class="panel-title">SPS-Style Calibration Catalog — T8</div>
+      <table>
+        <thead><tr><th>Cal ID</th><th>Calibration</th><th>OS ID</th><th>CVN</th><th>Applicability</th></tr></thead>
+        <tbody id="calibration-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Remote Diagnostics -->
+    <div class="panel" id="panel-remote">
+      <div class="panel-title">Remote Diagnostics Session</div>
+      <div class="card-grid">
+        <div class="card" id="remote-status-card"><div class="card-label">SESSION</div><div class="card-value" id="remote-status" style="font-size:14px">Not connected</div></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" onclick="remote.connect()">⏻ &nbsp;Connect</button>
+      </div>
+      <div class="panel-title" style="font-size:13px">Technician Chat</div>
+      <div class="log-viewer" id="remote-chat" style="height:180px"></div>
+      <div class="toolbar" style="margin-top:10px">
+        <input id="remote-chat-input" placeholder="Message..." style="flex:1; background:var(--surface); border:1px solid var(--border); color:var(--text); padding:8px; border-radius:4px; font-family:var(--font-mono)">
+        <button class="btn" onclick="remote.sendChat()">Send</button>
+      </div>
+    </div>
+
+    <!-- Plugin Manager -->
+    <div class="panel" id="panel-plugins">
+      <div class="panel-title">OEM Plugin Manager</div>
+      <table>
+        <thead><tr><th>OEM</th><th>Protocols</th><th>Year Range</th><th>Extended Services</th></tr></thead>
+        <tbody id="plugins-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="panel" id="panel-connection">
+      <div class="panel-title">Connection Status</div>
+      <div class="card-grid">
+        <div class="card warn"><div class="card-label">J2534 DEVICE</div><div class="card-value" style="font-size:14px">Mongoose Pro GM II (simulated)</div></div>
+        <div class="card"><div class="card-label">PROTOCOL</div><div class="card-value" style="font-size:14px" id="conn-protocol">ISO15765</div></div>
+        <div class="card"><div class="card-label">TRANSPORT</div><div class="card-value" style="font-size:14px">USB (desktop) / USB-OTG &amp; Remote CAN (Android)</div></div>
+        <div class="card"><div class="card-label">CLOUD BACKEND</div><div class="card-value" style="font-size:14px" id="conn-backend">Not configured</div></div>
+      </div>
     </div>
 
   </main>
@@ -483,6 +634,185 @@ function updateClock() {
   setTimeout(updateClock, 1000);
 }
 
+// ── CAN Sniffer panel (client-side demo capture — mirrors src.sniffer.engine) ─
+const sniffer = {
+  frames: [],
+  idStats: {},
+  capture() {
+    const ids = [0x120, 0x1A0, 0x280, 0x7E8];
+    for (let i = 0; i < 15; i++) {
+      const id = ids[Math.floor(Math.random() * ids.length)];
+      const data = Array.from({length: 8}, () => Math.floor(Math.random() * 256));
+      const frame = { id, data, ts: Date.now() / 1000 };
+      this.frames.push(frame);
+      const key = "0x" + id.toString(16).toUpperCase().padStart(3, "0");
+      const s = this.idStats[key] || { count: 0, last: null };
+      s.count++; s.last = data;
+      this.idStats[key] = s;
+    }
+    this.render();
+    appendLog("INFO", `Captured ${this.frames.length} total sniffer frames (demo)`);
+  },
+  clear() { this.frames = []; this.idStats = {}; this.render(); },
+  render() {
+    document.getElementById("sniff-total").textContent = this.frames.length;
+    document.getElementById("sniff-unique").textContent = Object.keys(this.idStats).length;
+    document.getElementById("sniff-bitrate").textContent =
+      this.frames.length >= 10 ? "500 kbps (est.)" : "—";
+    const tbody = document.getElementById("sniff-tbody");
+    tbody.innerHTML = Object.entries(this.idStats).map(([id, s]) => `
+      <tr><td style="color:var(--accent2)">${id}</td><td>${s.count}</td><td>${(s.count * 2).toFixed(1)}</td>
+      <td>${s.last.map(b => b.toString(16).toUpperCase().padStart(2,"0")).join(" ")}</td></tr>`).join("")
+      || `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">No frames captured</td></tr>`;
+  },
+  exportJSON() { this._download(JSON.stringify(this.frames, null, 2), "capture.json", "application/json"); },
+  exportLog() {
+    const text = this.frames.map(f => `(${f.ts.toFixed(6)}) CAN1 ${f.id.toString(16).toUpperCase()}#${f.data.map(b=>b.toString(16).toUpperCase().padStart(2,"0")).join("")}`).join("\n");
+    this._download(text, "capture.log", "text/plain");
+  },
+  exportASC() {
+    const text = this.frames.map(f => `${f.ts.toFixed(6)} 1  ${f.id.toString(16).toUpperCase()}  Rx d ${f.data.length} ${f.data.map(b=>b.toString(16).toUpperCase().padStart(2,"0")).join(" ")}`).join("\n");
+    this._download(text, "capture.asc", "text/plain");
+  },
+  _download(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+  }
+};
+
+// ── Flash-Safe checklist panel ────────────────────────────────────────────
+const flashsafe = {
+  lastResults: [],
+  evaluate() {
+    // Mirrors src.flashsafe.checklist.FlashSafeChecklist against demo telemetry.
+    this.lastResults = [
+      { name: "battery_voltage", status: "PASS", detail: "13.10 V (minimum 12.4 V)" },
+      { name: "ignition_state", status: "PASS", detail: "ON" },
+      { name: "can_bus_stability", status: "PASS", detail: "Stable" },
+      { name: "j2534_buffer", status: "PASS", detail: "OK" },
+      { name: "programming_session", status: "PASS", detail: "Active" },
+      { name: "blocking_dtcs", status: "PASS", detail: "No blocking DTCs" },
+      { name: "calibration_file", status: "PASS", detail: "Verified against calibration catalog" },
+    ];
+    this.render();
+  },
+  render() {
+    const tbody = document.getElementById("flashsafe-tbody");
+    tbody.innerHTML = this.lastResults.map(r => `
+      <tr><td>${r.name}</td>
+      <td><span class="badge badge-${r.status === "PASS" ? "ok" : r.status === "FAIL" ? "error" : "warn"}">${r.status}</span></td>
+      <td>${r.detail}</td></tr>`).join("");
+    const allClear = this.lastResults.length > 0 && this.lastResults.every(r => r.status === "PASS");
+    document.getElementById("flashsafe-summary").textContent = allClear ? "YES" : "NO";
+    document.getElementById("flashsafe-summary-card").className = "card " + (allClear ? "ok" : "error");
+  }
+};
+
+// ── ECU flashing panel ────────────────────────────────────────────────────
+const flashing = {
+  start() {
+    if (!flashsafe.lastResults.length) flashsafe.evaluate();
+    const allClear = flashsafe.lastResults.every(r => r.status === "PASS");
+    const log = document.getElementById("flash-log");
+    const emit = (msg) => { const d = document.createElement("div"); d.className = "log-INFO";
+      d.textContent = `[${new Date().toTimeString().slice(0,8)}] ${msg}`; log.appendChild(d); log.scrollTop = log.scrollHeight; };
+    if (!allClear) {
+      document.getElementById("flash-state").textContent = "FAILED";
+      emit("Flash-safe checklist not clear — aborting (see Flash-Safe Mode panel)");
+      return;
+    }
+    document.getElementById("flash-security").textContent = "No licensed provider configured";
+    emit("Requesting programming-level security access...");
+    emit("No licensed SeedKeyProvider configured — refusing real programming access.");
+    emit("(This demo panel stops here by design — see docs/security-access-disclaimer.md)");
+    document.getElementById("flash-state").textContent = "FAILED";
+    document.getElementById("flash-progress").textContent = "0%";
+  }
+};
+
+// ── Tech2/MDI emulator panel ──────────────────────────────────────────────
+const emulator = {
+  capabilities: {
+    ENGINE: { name: "Engine Control Module", dtcs: 0, rpm: 850, coolant: 91 },
+    TRANS:  { name: "Transmission Control Module", dtcs: 0, gear: "P" },
+    ABS:    { name: "ABS/Brake Control Module", dtcs: 0, wheelSpeed: 0 },
+    BCM:    { name: "Body Control Module", dtcs: 1 },
+  },
+  menu: ["Read Diagnostic Trouble Codes", "Display Live Data", "Actuator Tests / Special Functions",
+         "SPS Programming Passthrough", "Snapshot Viewer", "Safe CAN Injection (bench only)"],
+  render(module) {
+    const cap = this.capabilities[module];
+    const grid = document.getElementById("emulator-grid");
+    grid.innerHTML = Object.entries(cap).filter(([k]) => k !== "name").map(([k, v]) => `
+      <div class="card ${k === 'dtcs' && v > 0 ? 'error' : 'ok'}"><div class="card-label">${k.toUpperCase()}</div><div class="card-value">${v}</div></div>`).join("");
+    document.getElementById("emulator-menu").innerHTML = this.menu.map((m, i) => `
+      <div class="session-item"><div>${i+1}. ${m}</div><div class="si-meta">${cap.name}</div></div>`).join("");
+  }
+};
+
+// ── Cloud history panel (mirrors src.cloud.sync.OfflineCache) ────────────
+const cloud = {
+  pending: 3,
+  lastSync: null,
+  entries: [
+    { type: "vin_profiles", vin: state.vin, recorded: "2024-01-15 14:32" },
+    { type: "dtc_history", vin: state.vin, recorded: "2024-01-15 14:33" },
+    { type: "flash_history", vin: state.vin, recorded: "2024-01-10 09:00" },
+  ],
+  sync() {
+    this.pending = 0;
+    this.lastSync = new Date().toLocaleString();
+    this.render();
+    appendLog("INFO", "Cloud sync queue flushed (demo — see backend/app/routes_sync.py for the real endpoint)");
+  },
+  render() {
+    document.getElementById("cloud-pending").textContent = this.pending;
+    document.getElementById("cloud-last-sync").textContent = this.lastSync || "Never";
+    document.getElementById("cloud-tbody").innerHTML = this.entries.map(e => `
+      <tr><td>${e.type}</td><td style="color:var(--accent2)">${e.vin}</td><td>${e.recorded}</td></tr>`).join("");
+  }
+};
+
+// ── Remote diagnostics panel ──────────────────────────────────────────────
+const remote = {
+  connected: false,
+  connect() {
+    this.connected = true;
+    document.getElementById("remote-status").textContent = "Connected (demo session)";
+    document.getElementById("remote-status-card").className = "card ok";
+    appendLog("INFO", "Remote diagnostics session opened (see backend/app/websocket_remote.py)");
+  },
+  sendChat() {
+    const input = document.getElementById("remote-chat-input");
+    if (!input.value.trim()) return;
+    const chat = document.getElementById("remote-chat");
+    const d = document.createElement("div"); d.className = "log-DATA";
+    d.textContent = `[${new Date().toTimeString().slice(0,8)}] technician: ${input.value}`;
+    chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
+    input.value = "";
+  }
+};
+
+// ── Calibration catalog + plugin manager (static demo data) ──────────────
+function renderCalibrationCatalog() {
+  const rows = [
+    { cal_id: "CAL0001", calibration_id: "Trionic8-StageOEM", os_id: "E87-BASE", cvn: "4F2A9B10", applicability: "YS3FD45Y3" },
+    { cal_id: "CAL0002", calibration_id: "Trionic8-StageOEM-r2", os_id: "E87-BASE", cvn: "7C1D3E44", applicability: "YS3FD45Y3" },
+  ];
+  document.getElementById("calibration-tbody").innerHTML = rows.map(r => `
+    <tr><td style="color:var(--accent2)">${r.cal_id}</td><td>${r.calibration_id}</td><td>${r.os_id}</td><td>${r.cvn}</td><td>${r.applicability}</td></tr>`).join("");
+}
+
+function renderPluginManager() {
+  const rows = [
+    { oem: "gm", protocols: "ISO15765, GMLAN, KWP2000", years: "1996–2026", services: "haldex_relearn, epb_service_mode" },
+    { oem: "ford", protocols: "ISO15765, ISO9141", years: "1998–2026", services: "read_as_built_data" },
+  ];
+  document.getElementById("plugins-tbody").innerHTML = rows.map(r => `
+    <tr><td style="color:var(--accent2)">${r.oem}</td><td>${r.protocols}</td><td>${r.years}</td><td>${r.services}</td></tr>`).join("");
+}
+
 // ── Startup log entries ────────────────────────────────────────────────────
 appendLog("INFO", "SAAB-SUITE Dashboard initialised");
 appendLog("INFO", `VIN: ${state.vin}`);
@@ -492,6 +822,12 @@ appendLog("DATA", "Platform: Win7-SAAB VM / Mongoose Pro GM II");
 
 loadSessions();
 init();
+sniffer.render();
+flashsafe.evaluate();
+emulator.render("ENGINE");
+cloud.render();
+renderCalibrationCatalog();
+renderPluginManager();
 </script>
 </body>
 </html>

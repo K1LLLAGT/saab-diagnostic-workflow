@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# SAAB-SUITE cloud backend runtime artifacts
+saabsuite_cloud.db
+cloud_cache.sqlite3
+remote_sessions/
+android/.gradle/
+android/**/build/

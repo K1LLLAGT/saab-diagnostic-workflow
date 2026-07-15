@@ -1,0 +1,10 @@
+{
+  "oem": "ford",
+  "protocols": ["ISO15765", "ISO9141"],
+  "pidfiles": ["pids_ford_extended.json"],
+  "flashhandler": "plugin.py:Plugin.execute_flash",
+  "calibrationcatalog": "calibrations/",
+  "extendedservices": ["read_as_built_data", "pats_status_readonly"],
+  "minyear": 1998,
+  "maxyear": 2026
+}
