@@ -1,0 +1,14 @@
+[
+  {
+    "mode": "22", "pid": "2001", "name": "BOOST_KPA", "description": "Turbo boost pressure",
+    "bytes": 2, "unit": "kPa", "oem": "gm"
+  },
+  {
+    "mode": "22", "pid": "200B", "name": "HALDEX_ENGAGEMENT", "description": "Haldex AWD clutch engagement",
+    "bytes": 2, "unit": "%", "oem": "gm"
+  },
+  {
+    "mode": "22", "pid": "200C", "name": "BATTERY_V", "description": "Battery voltage (module-reported)",
+    "bytes": 2, "unit": "V", "oem": "gm"
+  }
+]

@@ -1,0 +1,4 @@
+[
+  { "cal_id": "CAL0001", "calibration_id": "Trionic8-StageOEM", "os_id": "E87-BASE", "segment_type": "OS+CAL" },
+  { "cal_id": "CAL0002", "calibration_id": "Trionic8-StageOEM-r2", "os_id": "E87-BASE", "segment_type": "CAL" }
+]

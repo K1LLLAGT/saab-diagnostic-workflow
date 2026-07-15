@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Matches any vendor-specific-class USB device so the OS offers to launch
+  SAAB-SUITE when a J2534-class adapter is plugged in. Narrow this to a
+  specific vendor-id/product-id pair once you've picked a supported
+  adapter family — see android/README.md.
+-->
+<resources>
+    <usb-device class="255" />
+</resources>

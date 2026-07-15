@@ -1,0 +1,13 @@
+{
+  "cal_id": "CAL0001",
+  "os_id": "E87-BASE",
+  "calibration_id": "Trionic8-StageOEM",
+  "cvn": "4F2A9B10",
+  "segment_type": "OS+CAL",
+  "ecu": "T8",
+  "applicability": ["YS3FD45Y3"],
+  "depends_on": [],
+  "supersedes": null,
+  "release_date": "2008-03-01",
+  "notes": "Original factory calibration, B284R / AF40-6 / Haldex Gen4."
+}

@@ -1,0 +1,10 @@
+{
+  "oem": "gm",
+  "protocols": ["ISO15765", "GMLAN", "KWP2000"],
+  "pidfiles": ["pids_gm_extended.json"],
+  "flashhandler": "plugin.py:Plugin.execute_flash",
+  "calibrationcatalog": "calibrations/",
+  "extendedservices": ["read_freeze_frame_extended", "haldex_relearn", "epb_service_mode"],
+  "minyear": 1996,
+  "maxyear": 2026
+}

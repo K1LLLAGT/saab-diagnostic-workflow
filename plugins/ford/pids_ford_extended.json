@@ -1,0 +1,10 @@
+[
+  {
+    "mode": "22", "pid": "4030", "name": "TRANS_FLUID_TEMP", "description": "Transmission fluid temperature",
+    "bytes": 1, "unit": "°C", "oem": "ford"
+  },
+  {
+    "mode": "22", "pid": "404A", "name": "TURBO_BOOST_KPA", "description": "EcoBoost turbo pressure",
+    "bytes": 2, "unit": "kPa", "oem": "ford"
+  }
+]
