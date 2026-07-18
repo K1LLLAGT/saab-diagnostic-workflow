@@ -1,0 +1,248 @@
+{
+  "schema": "andrax-registry/1",
+  "version": "2.0.0",
+  "generated": "2026-07-18",
+  "notes": "Central catalog consumed by launch_tool.sh, category_dispatch.sh, the scripting engine, and the Android app (copied to android-app/src/main/assets/tool_registry.json). Script paths are relative to termux-backend/tools/.",
+  "categories": [
+    {
+      "id": "info_gathering",
+      "name": "Information Gathering",
+      "icon": "search",
+      "tools": [
+        {
+          "id": "nmap",
+          "name": "Nmap",
+          "script": "info_gathering/nmap.sh",
+          "description": "Network host, port and service discovery.",
+          "example": "run-tool nmap -- -sV scanme.nmap.org"
+        },
+        {
+          "id": "whois",
+          "name": "Whois",
+          "script": "info_gathering/whois.sh",
+          "description": "Domain / IP registration lookup.",
+          "example": "run-tool whois -- example.com"
+        },
+        {
+          "id": "dnsenum",
+          "name": "DNS Enumeration",
+          "script": "info_gathering/dnsenum.sh",
+          "description": "DNS records + passive subdomain enumeration.",
+          "example": "run-tool dnsenum -- example.com"
+        }
+      ]
+    },
+    {
+      "id": "vuln_analysis",
+      "name": "Vulnerability Analysis",
+      "icon": "shield-alert",
+      "tools": [
+        {
+          "id": "nikto",
+          "name": "Nikto",
+          "script": "vuln_analysis/nikto.sh",
+          "description": "Web server misconfiguration & known-vuln scanner.",
+          "example": "run-tool nikto -- -h http://target.example"
+        },
+        {
+          "id": "sqlmap",
+          "name": "sqlmap",
+          "script": "vuln_analysis/sqlmap.sh",
+          "description": "Automatic SQL injection detection & exploitation.",
+          "example": "run-tool sqlmap -- -u \"http://target/item?id=1\" --batch --dbs"
+        }
+      ]
+    },
+    {
+      "id": "web_apps",
+      "name": "Web Applications",
+      "icon": "globe",
+      "tools": [
+        {
+          "id": "wpscan",
+          "name": "WPScan",
+          "script": "web_apps/wpscan.sh",
+          "description": "WordPress vulnerability / user enumeration.",
+          "example": "run-tool wpscan -- --url https://blog.example --enumerate vp,u"
+        },
+        {
+          "id": "dirb",
+          "name": "Content Discovery",
+          "script": "web_apps/dirb.sh",
+          "description": "Directory/file brute-forcing (ffuf/gobuster/dirsearch).",
+          "example": "run-tool dirb -- http://target/"
+        }
+      ]
+    },
+    {
+      "id": "database_assessment",
+      "name": "Database Assessment",
+      "icon": "database",
+      "tools": [
+        {
+          "id": "dbassess",
+          "name": "DB Assessment",
+          "script": "database_assessment/dbassess.sh",
+          "description": "Discover & fingerprint database services (nmap NSE).",
+          "example": "run-tool dbassess -- 10.0.0.20"
+        }
+      ]
+    },
+    {
+      "id": "password_attacks",
+      "name": "Password Attacks",
+      "icon": "key",
+      "tools": [
+        {
+          "id": "hydra",
+          "name": "Hydra",
+          "script": "password_attacks/hydra.sh",
+          "description": "Online login brute-forcing across many protocols.",
+          "example": "run-tool hydra -- -l admin -P wl.txt ssh://10.0.0.5"
+        },
+        {
+          "id": "john",
+          "name": "John the Ripper",
+          "script": "password_attacks/john.sh",
+          "description": "Offline password hash cracking.",
+          "example": "run-tool john -- hashes.txt --wordlist=rockyou.txt"
+        }
+      ]
+    },
+    {
+      "id": "wireless_attacks",
+      "name": "Wireless Attacks (limited)",
+      "icon": "wifi",
+      "tools": [
+        {
+          "id": "wifi_scan",
+          "name": "Wi-Fi Recon",
+          "script": "wireless_attacks/wifi_scan.sh",
+          "description": "AP enumeration (Termux:API) + offline WPA crack. No monitor mode on stock Android.",
+          "example": "run-tool wifi_scan -- scan"
+        }
+      ]
+    },
+    {
+      "id": "reverse_engineering",
+      "name": "Reverse Engineering",
+      "icon": "cpu",
+      "tools": [
+        {
+          "id": "apkinspect",
+          "name": "APK Inspector",
+          "script": "reverse_engineering/apkinspect.sh",
+          "description": "Static triage of an APK: manifest, strings, secrets.",
+          "example": "run-tool apkinspect -- target.apk"
+        }
+      ]
+    },
+    {
+      "id": "exploitation",
+      "name": "Exploitation Tools",
+      "icon": "crosshair",
+      "tools": [
+        {
+          "id": "metasploit",
+          "name": "Metasploit",
+          "script": "exploitation/metasploit.sh",
+          "description": "Exploitation framework (msfconsole).",
+          "example": "run-tool metasploit -- -x \"version; exit\""
+        },
+        {
+          "id": "msfvenom",
+          "name": "msfvenom",
+          "script": "exploitation/msfvenom.sh",
+          "description": "Payload generator.",
+          "example": "run-tool msfvenom -- -l payloads"
+        }
+      ]
+    },
+    {
+      "id": "sniffing_spoofing",
+      "name": "Sniffing & Spoofing",
+      "icon": "activity",
+      "tools": [
+        {
+          "id": "mitmproxy",
+          "name": "mitmproxy",
+          "script": "sniffing_spoofing/mitmproxy.sh",
+          "description": "Application-layer intercepting proxy (ettercap replacement).",
+          "example": "run-tool mitmproxy -- web"
+        }
+      ]
+    },
+    {
+      "id": "forensics",
+      "name": "Forensics",
+      "icon": "fingerprint",
+      "tools": [
+        {
+          "id": "binwalk",
+          "name": "binwalk",
+          "script": "forensics/binwalk.sh",
+          "description": "Firmware / binary carving and extraction.",
+          "example": "run-tool binwalk -- -e firmware.bin"
+        },
+        {
+          "id": "strings",
+          "name": "strings",
+          "script": "forensics/strings.sh",
+          "description": "Printable-string extraction + artifact highlighting.",
+          "example": "run-tool strings -- suspicious.bin 8"
+        }
+      ]
+    },
+    {
+      "id": "reporting",
+      "name": "Reporting Tools",
+      "icon": "file-text",
+      "tools": [
+        {
+          "id": "generate_report",
+          "name": "Generate Report",
+          "script": "reporting/generate_report.sh",
+          "description": "Assemble logs + loot into a Markdown report.",
+          "example": "run-tool generate_report -- \"Acme external test\""
+        },
+        {
+          "id": "markdown_to_html",
+          "name": "Markdown → HTML",
+          "script": "reporting/markdown_to_html.sh",
+          "description": "Render a Markdown report to standalone HTML.",
+          "example": "run-tool markdown_to_html -- report.md"
+        }
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "id": "recon_basic",
+      "name": "Basic Recon",
+      "script": "recon_basic.sh",
+      "description": "whois + DNS enum + nmap service scan + HTTP title for a target.",
+      "example": "run-workflow recon_basic -- example.com"
+    },
+    {
+      "id": "web_app_assessment",
+      "name": "Web App Assessment",
+      "script": "web_app_assessment.sh",
+      "description": "Content discovery + nikto + sqlmap smoke test against a URL.",
+      "example": "run-workflow web_app_assessment -- http://target/"
+    },
+    {
+      "id": "network_scan_full",
+      "name": "Full Network Scan",
+      "script": "network_scan_full.sh",
+      "description": "All-ports scan + service/version + default NSE scripts.",
+      "example": "run-workflow network_scan_full -- 10.0.0.0/24"
+    },
+    {
+      "id": "exploit_chain_example",
+      "name": "Exploit Chain (demo)",
+      "script": "exploit_chain_example.sh",
+      "description": "Recon → vuln check → Metasploit auxiliary run (scoped demo).",
+      "example": "run-workflow exploit_chain_example -- 10.0.0.5"
+    }
+  ]
+}
