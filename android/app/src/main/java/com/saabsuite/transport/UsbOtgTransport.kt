@@ -10,7 +10,7 @@ import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
-import android.os.Build
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -72,11 +72,9 @@ class UsbOtgTransport(private val context: Context) {
             }
         }
         // ACTION_USB_PERMISSION is our own private broadcast — not exported to other apps.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(receiver, IntentFilter(ACTION_USB_PERMISSION), Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            context.registerReceiver(receiver, IntentFilter(ACTION_USB_PERMISSION))
-        }
+        ContextCompat.registerReceiver(
+            context, receiver, IntentFilter(ACTION_USB_PERMISSION), ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         usbManager.requestPermission(device, permissionIntent)
     }
 
