@@ -49,21 +49,38 @@ curl -X POST http://localhost:8000/oauth/register \
 
 ## Web dashboard (GDS2-style UI)
 
-Static HTML/CSS/JS — no build step:
+Static HTML/CSS/JS — no build step required for local use:
 
 ```bash
 python3 -m http.server -d dashboard 8080
 # open http://localhost:8080
 ```
 
+`dashboard/index.html` loads its logic from `dashboard/src/app.js`
+(a plain, dependency-free ES script) via a `<script src="src/app.js">`
+tag — the file above serves both directly, no bundler needed.
+
 To host it as a Windows desktop app, wrap `dashboard/index.html` in
 Electron (`electron dashboard/index.html`) or any Chromium-based webview
-shell — no code changes required, since it has no external dependencies.
-Wire its demo functions (`sniffer`, `flashsafe`, `flashing`, `emulator`,
-`cloud`, `remote` in the inline `<script>`) to the real backend/CLI
-modules by replacing their bodies with `fetch()` calls against
-`backend/app`'s REST/WebSocket endpoints once you're running against a
-live vehicle instead of demo data.
+shell — no code changes required. Wire its demo functions (`sniffer`,
+`flashsafe`, `flashing`, `emulator`, `cloud`, `remote` in
+`dashboard/src/app.js`) to the real backend/CLI modules by replacing
+their bodies with `fetch()` calls against `backend/app`'s REST/WebSocket
+endpoints once you're running against a live vehicle instead of demo
+data.
+
+### Optional production bundle
+
+A root-level `package.json` + `webpack.config.js` bundle
+`dashboard/src/app.js` into a single minified `dashboard/dist/bundle.js`
+— useful when packaging the dashboard into an Electron app or any
+context where you want one production asset instead of the raw source
+file. This is optional; it doesn't change how the dashboard runs locally.
+
+```bash
+npm ci
+npm run build   # writes dashboard/dist/bundle.js
+```
 
 ## Android transport layer
 

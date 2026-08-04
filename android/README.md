@@ -22,6 +22,10 @@ that out is a substantial follow-on project of its own. What's here is:
 - `app/build.gradle.kts`, `settings.gradle.kts`, `AndroidManifest.xml` —
   minimal scaffold sufficient to drop these transports into a real app
   module.
+- `app/src/main/java/com/saabsuite/MainActivity.kt` — an empty
+  placeholder activity that satisfies the manifest's launcher-activity
+  reference so the module actually builds; replace it with real UI
+  (Activities/ViewModels/gauge screens) when building this out further.
 
 ## Design notes carried over from the desktop suite
 

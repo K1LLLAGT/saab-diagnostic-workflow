@@ -1,3 +1,7 @@
+# Node (dashboard build tooling)
+node_modules/
+npm-debug.log*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -223,3 +227,4 @@ cloud_cache.sqlite3
 remote_sessions/
 android/.gradle/
 android/**/build/
+android/local.properties
