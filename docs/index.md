@@ -12,6 +12,8 @@ This site mirrors the core repo documentation and is intended as a technician-fr
 - [9-3 Aero XWD Workflow](workflows/saab-9-3-aero-xwd.md)
 - [Module Programming Matrix](module-programming-matrix.md)
 - [Architecture](architecture.md)
+- [Ecosystem Architecture](ecosystem-architecture.md)
+- [Hybrid Hardware Blueprint](hybrid-hardware-blueprint.md) — Pi 5 + Mini PC + Workstation hardware build
 
 ---
 
