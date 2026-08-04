@@ -3,8 +3,10 @@ name: NodeJS with Webpack
 on:
   push:
     branches: [ "main" ]
+    paths: [ "dashboard/src/**", "package.json", "package-lock.json", "webpack.config.js", ".github/workflows/webpack.yml" ]
   pull_request:
     branches: [ "main" ]
+    paths: [ "dashboard/src/**", "package.json", "package-lock.json", "webpack.config.js", ".github/workflows/webpack.yml" ]
 
 jobs:
   build:
@@ -21,8 +23,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
 
     - name: Build
       run: |
-        npm install
+        npm ci
         npx webpack

@@ -10,6 +10,7 @@ import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -57,8 +58,9 @@ class UsbOtgTransport(private val context: Context) {
      * a connection on API 26+). Suspends until the user responds or the
      * request errors. */
     suspend fun requestPermission(device: UsbDevice): Boolean = suspendCancellableCoroutine { cont ->
+        // setPackage() makes this explicit, required alongside FLAG_MUTABLE on Android 14+.
         val permissionIntent = PendingIntent.getBroadcast(
-            context, 0, Intent(ACTION_USB_PERMISSION),
+            context, 0, Intent(ACTION_USB_PERMISSION).setPackage(context.packageName),
             PendingIntent.FLAG_MUTABLE
         )
         val receiver = object : BroadcastReceiver() {
@@ -70,7 +72,10 @@ class UsbOtgTransport(private val context: Context) {
                 }
             }
         }
-        context.registerReceiver(receiver, IntentFilter(ACTION_USB_PERMISSION))
+        // ACTION_USB_PERMISSION is our own private broadcast — not exported to other apps.
+        ContextCompat.registerReceiver(
+            context, receiver, IntentFilter(ACTION_USB_PERMISSION), ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         usbManager.requestPermission(device, permissionIntent)
     }
 

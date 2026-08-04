@@ -33,6 +33,7 @@ A complete, technician-grade diagnostic workflow for SAAB vehicles using:
 - [Module Programming Matrix](docs/module-programming-matrix.md)
 - [Architecture](docs/architecture.md)
 - [Ecosystem Architecture](docs/ecosystem-architecture.md) — broader tooling layer below
+- [Hybrid Hardware Blueprint](docs/hybrid-hardware-blueprint.md) — Pi 5 + Mini PC (N100) + ROG Strix workstation hardware build, wiring, PCB, BOM, and manufacturing
 - [Plugin API](docs/plugin-api.md)
 - [Security-Access Disclaimer](docs/security-access-disclaimer.md) — read before touching flashing
 - [Build Instructions](docs/build-instructions.md)
