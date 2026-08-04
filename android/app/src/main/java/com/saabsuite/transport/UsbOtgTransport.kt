@@ -58,8 +58,9 @@ class UsbOtgTransport(private val context: Context) {
      * a connection on API 26+). Suspends until the user responds or the
      * request errors. */
     suspend fun requestPermission(device: UsbDevice): Boolean = suspendCancellableCoroutine { cont ->
+        // setPackage() makes this explicit, required alongside FLAG_MUTABLE on Android 14+.
         val permissionIntent = PendingIntent.getBroadcast(
-            context, 0, Intent(ACTION_USB_PERMISSION),
+            context, 0, Intent(ACTION_USB_PERMISSION).setPackage(context.packageName),
             PendingIntent.FLAG_MUTABLE
         )
         val receiver = object : BroadcastReceiver() {
